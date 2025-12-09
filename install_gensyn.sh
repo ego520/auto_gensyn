@@ -45,7 +45,7 @@ log_debug() {
     echo -e "${CYAN}🐛 $1${NC}"
 }
 
-# 密码验证函数 - 使用 base64 编码的密码
+# 密码验证函数
 verify_password() {
     local auth_file="$HOME/.ego_gensyn_auth"
     local max_attempts=3
@@ -122,7 +122,6 @@ verify_password() {
             log_error "密码错误"
             if [[ $attempt -lt $max_attempts ]]; then
                 log_warning "还有 $((max_attempts - attempt)) 次机会"
-                echo "提示：密码是 'python' (base64: cHl0aG9u)"
             fi
             attempt=$((attempt + 1))
         fi

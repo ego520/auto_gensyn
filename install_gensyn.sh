@@ -2,7 +2,6 @@
 
 set -e
 set -o pipefail
-
 # 密码验证函数
 verify_password() {
     local auth_file="$HOME/.gensyn_auth"

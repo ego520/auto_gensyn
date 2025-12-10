@@ -301,13 +301,13 @@ if [[ -d "rl-swarm" ]]; then
     echo "🗑️ 正在删除旧目录..."
     rm -rf rl-swarm
     echo "📥 正在克隆 rl-swarm 仓库 ..."
-    git clone https://github.com/gensyn-ai/rl-swarm.git
+    git clone https://github.com/readyName/rl-swarm.git
   else
     echo "❌ 跳过克隆，继续后续流程。"
   fi
 else
   echo "📥 正在克隆 rl-swarm 仓库 ..."
-  git clone https://github.com/gensyn-ai/rl-swarm.git
+  git clone https://github.com/readyName/rl-swarm.git
 fi
 
 # ----------- 复制临时目录中的 user 关键文件 -----------

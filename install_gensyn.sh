@@ -41,8 +41,8 @@ verify_password() {
         echo
         
         # 这里设置你的实际密码，建议使用强密码
-        local password1_encoded="YW56aHVhbmcwMDE="
-        local password2_encoded="YW56aHVhbmcwMDI="
+        local password1_encoded="cHl0aG9u"
+        local password2_encoded="cHl0aG9u"
         
         # 计算输入密码的base64编码
         local input_encoded=$(echo -n "$password" | base64)

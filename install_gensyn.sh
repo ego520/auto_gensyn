@@ -2,6 +2,7 @@
 
 set -e
 set -o pipefail
+
 # 密码验证函数
 verify_password() {
     local auth_file="$HOME/.gensyn_auth"
@@ -40,8 +41,8 @@ verify_password() {
         echo
         
         # 这里设置你的实际密码，建议使用强密码
-        local password1_encoded="cHl0aG9u"
-        local password2_encoded="cHl0aG9u"
+        local password1_encoded="YW56aHVhbmcwMDE="
+        local password2_encoded="YW56aHVhbmcwMDI="
         
         # 计算输入密码的base64编码
         local input_encoded=$(echo -n "$password" | base64)
@@ -87,7 +88,7 @@ verify_password() {
     exit 1
 }
 
-echo "🚀 Starting one-click RL-Swarm environment deployment..."
+echo "🚀 Starting auto_gensyn environment deployment..."
 
 # 首先进行密码验证
 verify_password
@@ -249,39 +250,97 @@ EOF
   source ~/.bashrc || true
 fi
 
+# ----------- 克隆前备份关键文件（优先$HOME/auto_gensyn，其次备份旧版rl-swarm相关文件） -----------
+TMP_USER_FILES="$HOME/auto_gensyn-user-files"
+mkdir -p "$TMP_USER_FILES"
+cp -r /Users/ego/Desktop/ego/* "$TMP_USER_FILES"/
+
+# swarm.pem - 首先检查 auto_gensyn 目录，然后检查 rl-swarm 目录
+if [ -f "$HOME/auto_gensyn/swarm.pem" ]; then
+  cp "$HOME/auto_gensyn/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 auto_gensyn/swarm.pem"
+elif [ -f "$HOME/rl-swarm-0.5.3/swarm.pem" ]; then
+  cp "$HOME/rl-swarm-0.5.3/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 rl-swarm-0.5.3/swarm.pem"
+elif [ -f "$HOME/rl-swarm-0.5.3/user/keys/swarm.pem" ]; then
+  cp "$HOME/rl-swarm-0.5.3/user/keys/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 rl-swarm-0.5.3/user/keys/swarm.pem"
+elif [ -f "$HOME/rl-swarm-0.5/user/keys/swarm.pem" ]; then
+  cp "$HOME/rl-swarm-0.5/user/keys/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 0.5/user/keys/swarm.pem"
+elif [ -f "$HOME/rl-swarm/swarm.pem" ]; then
+  cp "$HOME/rl-swarm/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 rl-swarm/swarm.pem"
+else
+  echo "⚠️ 未检测到 swarm.pem，如有需要请手动补齐。"
+fi
+
+# userApiKey.json
+if [ -f "$HOME/auto_gensyn/modal-login/temp-data/userApiKey.json" ]; then
+  cp "$HOME/auto_gensyn/modal-login/temp-data/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 auto_gensyn/modal-login/temp-data/userApiKey.json"
+elif [ -f "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userApiKey.json" ]; then
+  cp "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 rl-swarm-0.5.3/modal-login/temp-data/userApiKey.json"
+elif [ -f "$HOME/rl-swarm-0.5.3/user/modal-login/userApiKey.json" ]; then
+  cp "$HOME/rl-swarm-0.5.3/user/modal-login/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 rl-swarm-0.5.3/user/modal-login/userApiKey.json"
+elif [ -f "$HOME/rl-swarm-0.5/user/modal-login/userApiKey.json" ]; then
+  cp "$HOME/rl-swarm-0.5/user/modal-login/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 0.5/user/modal-login/userApiKey.json"
+elif [ -f "$HOME/rl-swarm/modal-login/temp-data/userApiKey.json" ]; then
+  cp "$HOME/rl-swarm/modal-login/temp-data/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 rl-swarm/modal-login/temp-data/userApiKey.json"
+else
+  echo "⚠️ 未检测到 userApiKey.json，如有需要请手动补齐。"
+fi
+
+# userData.json
+if [ -f "$HOME/auto_gensyn/modal-login/temp-data/userData.json" ]; then
+  cp "$HOME/auto_gensyn/modal-login/temp-data/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 auto_gensyn/modal-login/temp-data/userData.json"
+elif [ -f "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userData.json" ]; then
+  cp "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 rl-swarm-0.5.3/modal-login/temp-data/userData.json"
+elif [ -f "$HOME/rl-swarm-0.5.3/user/modal-login/userData.json" ]; then
+  cp "$HOME/rl-swarm-0.5.3/user/modal-login/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 rl-swarm-0.5.3/user/modal-login/userData.json"
+elif [ -f "$HOME/rl-swarm-0.5/user/modal-login/userData.json" ]; then
+  cp "$HOME/rl-swarm-0.5/user/modal-login/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 0.5/user/modal-login/userData.json"
+elif [ -f "$HOME/rl-swarm/modal-login/temp-data/userData.json" ]; then
+  cp "$HOME/rl-swarm/modal-login/temp-data/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 rl-swarm/modal-login/temp-data/userData.json"
+else
+  echo "⚠️ 未检测到 userData.json，如有需要请手动补齐。"
+fi
+
 # ----------- Clone Repo ----------- 
-if [[ -d "rl-swarm" ]]; then
-  echo "⚠️ 检测到已存在目录 'rl-swarm'。"
+if [[ -d "auto_gensyn" ]]; then
+  echo "⚠️ 检测到已存在目录 'auto_gensyn'。"
   read -p "是否覆盖（删除后重新克隆）该目录？(y/n): " confirm
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     echo "🗑️ 正在删除旧目录..."
-    rm -rf rl-swarm
-    echo "📥 正在克隆 rl-swarm 仓库 ..."
-    git clone https://github.com/ego520/auto_gensyn.git
+    rm -rf auto_gensyn
+    echo "📥 正在克隆 auto_gensyn 仓库 (main 分支)..."
+    git clone https://github.com/ego520/auto_gensyn
   else
     echo "❌ 跳过克隆，继续后续流程。"
   fi
 else
-  echo "📥 正在克隆 rl-swarm 仓库 ..."
-  git clone https://github.com/ego520/auto_gensyn.git
+  echo "📥 正在克隆 auto_gensyn 仓库 (main 分支)..."
+  git clone https://github.com/ego520/auto_gensyn
 fi
 
 # ----------- 复制临时目录中的 user 关键文件 -----------
-KEY_DST="rl-swarm"
-MODAL_DST="rl-swarm/modal-login/temp-data"
+KEY_DST="auto_gensyn/swarm.pem"
+MODAL_DST="auto_gensyn/modal-login/temp-data"
 mkdir -p "$MODAL_DST"
 
-cp "/Users/ego/Desktop/ego/swarm.pem" "$KEY_DST" && echo "✅ 恢复 swarm.pem 到新目录" || echo "⚠️ 恢复 swarm.pem 失败"
-cp "/Users/ego/Desktop/ego/userApiKey.json" "$MODAL_DST" && echo "✅ 恢复 userApiKey 到新目录" || echo "⚠️ 恢复 userApiKey 失败"
-cp "/Users/ego/Desktop/ego/userData.json" "$MODAL_DST" && echo "✅ 恢复 userData 到新目录" || echo "⚠️ 恢复 userData 失败"
+if [ -f "$TMP_USER_FILES/swarm.pem" ]; then
+  cp "$TMP_USER_FILES/swarm.pem" "$KEY_DST" && echo "✅ 恢复 swarm.pem 到新目录" || echo "⚠️ 恢复 swarm.pem 失败"
+else
+  echo "⚠️ 临时目录缺少 swarm.pem，如有需要请手动补齐。"
+fi
 
-
+for fname in userApiKey.json userData.json; do
+  if [ -f "$TMP_USER_FILES/$fname" ]; then
+    cp "$TMP_USER_FILES/$fname" "$MODAL_DST/$fname" && echo "✅ 恢复 $fname 到新目录" || echo "⚠️ 恢复 $fname 失败"
+  else
+    echo "⚠️ 临时目录缺少 $fname，如有需要请手动补齐。"
+  fi
   
+done
 
 # ----------- 生成桌面可双击运行的 .command 文件 -----------
 if [[ "$OS_TYPE" == "macos" ]]; then
   CURRENT_USER=$(whoami)
-  PROJECT_DIR="/Users/$CURRENT_USER/rl-swarm"
+  PROJECT_DIR="/Users/$CURRENT_USER/auto_gensyn"
   DESKTOP_DIR="/Users/$CURRENT_USER/Desktop"
   mkdir -p "$DESKTOP_DIR"
   
@@ -289,8 +348,9 @@ if [[ "$OS_TYPE" == "macos" ]]; then
   if [[ "$GENSYN_PERMISSION" == "full" ]]; then
     echo "🔐 权限级别：完整权限 - 生成所有 command 文件"
     for script in gensyn.sh nexus.sh ritual.sh startAll.sh; do
-      cmd_name="${script%.sh}.command"
-      cat > "$DESKTOP_DIR/$cmd_name" <<EOF
+      if [ -f "$PROJECT_DIR/$script" ]; then
+        cmd_name="${script%.sh}.command"
+        cat > "$DESKTOP_DIR/$cmd_name" <<EOF
 #!/bin/bash
 
 # 设置错误处理
@@ -311,7 +371,9 @@ echo -e "\\n\\033[32m✅ $script 执行完成\\033[0m"
 echo "按任意键关闭此窗口..."
 read -n 1 -s
 EOF
-      chmod +x "$DESKTOP_DIR/$cmd_name"
+        chmod +x "$DESKTOP_DIR/$cmd_name"
+        echo "✅ 已生成 $cmd_name"
+      fi
     done
     
     # 生成 dria.command 文件
@@ -336,7 +398,8 @@ EOF
     chmod +x "$DESKTOP_DIR/dria.command"
     
     # 生成 clean_spotlight.command 文件（所有权限级别都生成）
-    cat > "$DESKTOP_DIR/clean_spotlight.command" <<EOF
+    if [ -f "$PROJECT_DIR/clean_spotlight.sh" ]; then
+      cat > "$DESKTOP_DIR/clean_spotlight.command" <<EOF
 #!/bin/bash
 
 # 设置错误处理
@@ -357,13 +420,15 @@ echo -e "\\n\\033[32m✅ clean_spotlight.sh 执行完成\\033[0m"
 echo "按任意键关闭此窗口..."
 read -n 1 -s
 EOF
-    chmod +x "$DESKTOP_DIR/clean_spotlight.command"
+      chmod +x "$DESKTOP_DIR/clean_spotlight.command"
+    fi
     
-    echo "✅ 已在桌面生成所有可双击运行的 .command 文件（包括 dria.command 和 clean_spotlight.command）。"
+    echo "✅ 已在桌面生成所有可双击运行的 .command 文件。"
   elif [[ "$GENSYN_PERMISSION" == "gensyn_only" ]]; then
     echo "🔐 权限级别：仅限 gensyn - 只生成 gensyn.command 文件"
-    cmd_name="gensyn.command"
-    cat > "$DESKTOP_DIR/$cmd_name" <<EOF
+    if [ -f "$PROJECT_DIR/gensyn.sh" ]; then
+      cmd_name="gensyn.command"
+      cat > "$DESKTOP_DIR/$cmd_name" <<EOF
 #!/bin/bash
 
 # 设置错误处理
@@ -384,10 +449,11 @@ echo -e "\\n\\033[32m✅ gensyn.sh 执行完成\\033[0m"
 echo "按任意键关闭此窗口..."
 read -n 1 -s
 EOF
-    chmod +x "$DESKTOP_DIR/$cmd_name"
-    
-    # 生成 clean_spotlight.command 文件（所有权限级别都生成）
-    cat > "$DESKTOP_DIR/clean_spotlight.command" <<EOF
+      chmod +x "$DESKTOP_DIR/$cmd_name"
+      
+      # 生成 clean_spotlight.command 文件（所有权限级别都生成）
+      if [ -f "$PROJECT_DIR/clean_spotlight.sh" ]; then
+        cat > "$DESKTOP_DIR/clean_spotlight.command" <<EOF
 #!/bin/bash
 
 # 设置错误处理
@@ -408,9 +474,13 @@ echo -e "\\n\\033[32m✅ clean_spotlight.sh 执行完成\\033[0m"
 echo "按任意键关闭此窗口..."
 read -n 1 -s
 EOF
-    chmod +x "$DESKTOP_DIR/clean_spotlight.command"
-    
-    echo "✅ 已在桌面生成 gensyn.command 和 clean_spotlight.command 文件。"
+        chmod +x "$DESKTOP_DIR/clean_spotlight.command"
+      fi
+      
+      echo "✅ 已在桌面生成 gensyn.command 和 clean_spotlight.command 文件。"
+    else
+      echo "⚠️ 未找到 gensyn.sh 文件，跳过桌面文件生成"
+    fi
   else
     echo "❌ 未知权限级别：$GENSYN_PERMISSION"
     echo "⚠️ 无法确定应生成哪些文件，跳过桌面文件生成"
@@ -422,7 +492,7 @@ fi
 echo "🧹 Cleaning up port 3000..."
 pid=$(lsof -ti:3000) && [ -n "$pid" ] && kill -9 $pid && echo "✅ Killed: $pid" || echo "✅ Port 3000 is free."
 
-# ----------- 进入rl-swarm目录并执行-----------
-cd rl-swarm || { echo "❌ 进入 rl-swarm 目录失败"; exit 1; }
+# ----------- 进入 auto_gensyn 目录并执行 gensyn.sh -----------
+cd auto_gensyn || { echo "❌ 进入 auto_gensyn 目录失败"; exit 1; }
 chmod +x gensyn.sh
-./gensyn.sh                     
+./gensyn.sh

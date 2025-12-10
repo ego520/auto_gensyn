@@ -300,43 +300,25 @@ if [[ -d "rl-swarm" ]]; then
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     echo "🗑️ 正在删除旧目录..."
     rm -rf rl-swarm
-    echo "📥 正在克隆 rl-swarm 仓库..."
-    git clone https://github.com/ego520/auto_gensyn.git
+    echo "📥 正在克隆 rl-swarm 仓库 (v0.7.0 分支)..."
+    git clone -b 0.7.0 https://github.com/readyName/rl-swarm.git
   else
     echo "❌ 跳过克隆，继续后续流程。"
   fi
 else
-  echo "📥 正在克隆 rl-swarm 仓库 ..."
-  git clone https://github.com/ego520/auto_gensyn.git
+  echo "📥 正在克隆 rl-swarm 仓库 (0.7.0 分支)..."
+  git clone -b 0.7.0 https://github.com/readyName/rl-swarm.git
 fi
 
-# ----------- 从当前目录复制 user 关键文件 -----------
-SOURCE_DIR="/Users/ego/Desktop/ego"  # 您的文件所在目录
-KEY_DST="rl-swarm/swarm.pem"
+# ----------- 复制临时目录中的 user 关键文件 -----------
+KEY_DST="rl-swarm"
 MODAL_DST="rl-swarm/modal-login/temp-data"
 mkdir -p "$MODAL_DST"
 
-echo "从 $SOURCE_DIR 复制文件..."
-
-if [ -f "$SOURCE_DIR/swarm.pem" ]; then
-  cp "$SOURCE_DIR/swarm.pem" "$KEY_DST" && echo "✅ 恢复 swarm.pem 到 rl-swarm/" || echo "⚠️ 恢复 swarm.pem 失败"
-else
-  echo "⚠️ 当前目录缺少 swarm.pem，请确保文件在 $SOURCE_DIR"
-fi
-
-for fname in userApiKey.json userData.json; do
-  if [ -f "$SOURCE_DIR/$fname" ]; then
-    cp "$SOURCE_DIR/$fname" "$MODAL_DST/$fname" && echo "✅ 恢复 $fname 到 $MODAL_DST/" || echo "⚠️ 恢复 $fname 失败"
-  else
-    echo "⚠️ 当前目录缺少 $fname，请确保文件在 $SOURCE_DIR"
-  fi
+cp "/Users/ego/Desktop/ego/swarm.pem" "$KEY_DST" && echo "✅ 恢复 swarm.pem 到新目录" || echo "⚠️ 恢复 swarm.pem 失败"
+cp "/Users/ego/Desktop/ego/*.json" "$MODAL_DST" && echo "✅ 恢复 json 到新目录" || echo "⚠️ 恢复 json 失败"
+  
 done
-
-echo "文件复制完成！"
-echo "目标位置:"
-echo "  - $KEY_DST"
-echo "  - $MODAL_DST/userApiKey.json"
-echo "  - $MODAL_DST/userData.json"
 
 # ----------- 生成桌面可双击运行的 .command 文件 -----------
 if [[ "$OS_TYPE" == "macos" ]]; then

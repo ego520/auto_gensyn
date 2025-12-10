@@ -202,7 +202,7 @@ if [[ "$OS_TYPE" == "macos" ]]; then
     if command -v ollama &>/dev/null; then
       echo "✅ Ollama 已成功安装"
       echo "📥 正在下载必要的模型..."
-      ollama pull llama2 || echo "⚠️ 拉取模型失败，稍后可以手动执行: ollama pull llama2"
+      ollama pull llama2 2>/dev/null || echo "⚠️ 拉取模型失败，稍后可以手动执行: ollama pull llama2"
     else
       echo "❌ Ollama 安装失败，请手动安装：https://ollama.com/download"
       echo "⚠️ 警告：后续流程可能因缺少 Ollama 而失败"
@@ -373,42 +373,36 @@ else
   git clone -b 0.7.0 https://github.com/readyName/rl-swarm.git
 fi
 
-# ----------- 修改 gensyn.sh 脚本解决 Ollama 问题 -----------
-echo "🔧 修改 gensyn.sh 以跳过 brew cask 安装 Ollama..."
+# ----------- 修复 gensyn.sh 脚本解决 Ollama 问题 -----------
+echo "🔧 修复 gensyn.sh 以跳过 brew cask 安装 Ollama..."
 if [[ -f "rl-swarm/gensyn.sh" ]]; then
   # 备份原始文件
   cp rl-swarm/gensyn.sh rl-swarm/gensyn.sh.backup
   
-  # 修改安装部分，跳过brew cask安装Ollama
-  cat > rl-swarm/gensyn.sh.patch << 'EOF'
-#!/bin/bash
-
-set -e
-
-cd "$(dirname "$0")"
-source ./constants.sh
-
-# 检查 Ollama 是否已安装，如果已安装则跳过
-if command -v ollama &>/dev/null; then
-    echo "✅ Ollama is already installed, skipping..."
-else
-    echo "⚠️ Ollama is not installed. Please install it manually from: https://ollama.com/download"
-    echo "You can run: curl -fsSL https://ollama.com/install.sh | sh"
-fi
-
-# 继续其他安装步骤
-EOF
-  
-  # 合并脚本
-  head -n 20 rl-swarm/gensyn.sh > rl-swarm/gensyn.sh.new
-  cat rl-swarm/gensyn.sh.patch >> rl-swarm/gensyn.sh.new
-  tail -n +30 rl-swarm/gensyn.sh >> rl-swarm/gensyn.sh.new
-  
-  mv rl-swarm/gensyn.sh.new rl-swarm/gensyn.sh
-  chmod +x rl-swarm/gensyn.sh
-  rm rl-swarm/gensyn.sh.patch
-  
-  echo "✅ gensyn.sh 已修改，跳过 brew cask 安装 Ollama"
+  # 使用 sed 更安全地修改脚本
+  # 查找并替换包含 "brew install --cask ollama" 的行
+  if grep -q "brew install --cask ollama" rl-swarm/gensyn.sh; then
+    echo "✅ 找到需要修改的行，进行替换..."
+    # 替换整个 Ollama 安装部分
+    sed -i.bak '/Ollama 安装/,/else/{/brew install --cask ollama/d; /else/d}' rl-swarm/gensyn.sh
+    
+    # 添加更安全的检查逻辑
+    sed -i.bak '/检查 Ollama 安装/a\
+# 检查 Ollama 是否已安装\
+if ! command -v ollama &> /dev/null; then\
+    echo "⚠️ Ollama is not installed. Please install it manually from: https://ollama.com/download"\
+    echo "   You can run: curl -fsSL https://ollama.com/install.sh | sh"\
+    echo "   Or download from: https://ollama.com/download"\
+    echo "   After installation, restart this script."\
+    exit 1\
+else\
+    echo "✅ Ollama is already installed"\
+fi' rl-swarm/gensyn.sh
+    
+    echo "✅ gensyn.sh 已修改，跳过 brew cask 安装 Ollama"
+  else
+    echo "⚠️ 未找到需要修改的 Ollama 安装行，可能脚本已更新"
+  fi
 fi
 
 # ----------- 复制临时目录中的 user 关键文件 -----------
@@ -610,13 +604,114 @@ else
   echo "安装命令: curl -fsSL https://ollama.com/install.sh | sh"
 fi
 
+# ----------- 创建修复脚本 -----------
+echo "🔧 创建修复脚本..."
+cat > rl-swarm/fix_ollama.sh << 'EOF'
+#!/bin/bash
+
+set -e
+
+echo "🔧 修复 Ollama 安装问题..."
+
+# 检查是否已安装 Ollama
+if command -v ollama &>/dev/null; then
+    echo "✅ Ollama 已安装"
+else
+    echo "📥 安装 Ollama..."
+    echo "⚠️ 注意：需要 sudo 权限"
+    curl -fsSL https://ollama.com/install.sh | sh
+fi
+
+# 修改 gensyn.sh 跳过 brew cask 安装
+if grep -q "brew install --cask ollama" gensyn.sh; then
+    echo "🔄 修改 gensyn.sh..."
+    # 备份
+    cp gensyn.sh gensyn.sh.backup.$(date +%Y%m%d%H%M%S)
+    
+    # 替换安装命令
+    sed -i '' 's/brew install --cask ollama/# brew install --cask ollama - removed due to issues/' gensyn.sh
+    
+    # 在适当位置添加检查
+    sed -i '' '/# 检查 Ollama 安装/a\
+# 跳过 brew cask 安装，使用系统已安装的 Ollama\
+if ! command -v ollama &> /dev/null; then\
+    echo "❌ Ollama not found. Please install from https://ollama.com/download"\
+    exit 1\
+fi' gensyn.sh
+    
+    echo "✅ gensyn.sh 已修复"
+fi
+
+echo "🚀 现在可以运行 ./gensyn.sh 了"
+EOF
+
+chmod +x rl-swarm/fix_ollama.sh
+echo "✅ 修复脚本已创建: rl-swarm/fix_ollama.sh"
+
 # ----------- 进入rl-swarm目录并执行-----------
 cd rl-swarm || { echo "❌ 进入 rl-swarm 目录失败"; exit 1; }
 chmod +x gensyn.sh
 
 echo "🚀 开始执行 gensyn.sh..."
-echo "⚠️ 注意：如果之前安装失败，这可能会跳过一些已完成的步骤"
-./gensyn.sh
+echo "⚠️ 注意：如果遇到 Ollama 安装问题，请先运行: ./fix_ollama.sh"
+
+# 直接运行 gensyn.sh，如果失败则提示运行修复脚本
+if ./gensyn.sh; then
+    echo "✅ gensyn.sh 执行成功！"
+else
+    echo "❌ gensyn.sh 执行失败"
+    echo "💡 尝试运行修复脚本: ./fix_ollama.sh"
+    echo "然后再次运行: ./gensyn.sh"
+    
+    # 创建简单的修复后的 gensyn.sh 作为备选
+    cat > gensyn_simple.sh << 'EOF2'
+#!/bin/bash
+
+set -e
+
+cd "$(dirname "$0")"
+
+echo "🚀 Starting GenRL installation..."
+
+# 检查依赖
+if ! command -v node &> /dev/null; then
+    echo "❌ Node.js not found"
+    exit 1
+fi
+
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Python3 not found"
+    exit 1
+fi
+
+if ! command -v ollama &> /dev/null; then
+    echo "❌ Ollama not found. Please install from https://ollama.com/download"
+    exit 1
+fi
+
+echo "✅ All dependencies are installed"
+
+# 安装 Python 依赖
+echo "📦 Installing Python dependencies..."
+python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
+
+# 安装 Node.js 依赖
+echo "📦 Installing Node.js dependencies..."
+npm install
+
+# 启动服务
+echo "🚀 Starting services..."
+screen -dmS rl-swarm npm run dev
+
+echo "✅ Installation complete!"
+echo "🔍 Check logs in: logs/"
+EOF2
+    
+    chmod +x gensyn_simple.sh
+    echo "✅ 已创建简化版脚本: ./gensyn_simple.sh"
+    echo "💡 您可以运行: ./gensyn_simple.sh"
+fi
 
 echo "✅ 部署完成！"
 echo "📌 请在桌面上找到相应的 .command 文件来运行各个服务"

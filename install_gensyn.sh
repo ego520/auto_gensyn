@@ -250,49 +250,6 @@ EOF
   source ~/.bashrc || true
 fi
 
-# ----------- 克隆前备份关键文件（优先$HOME/rl-swarm-0.5.3，其次$HOME/rl-swarm-0.5，最后$HOME/rl-swarm） -----------
-TMP_USER_FILES="$HOME/rl-swarm-user-files"
-mkdir -p "$TMP_USER_FILES"
-
-# swarm.pem
-if [ -f "$HOME/rl-swarm-0.5.3/swarm.pem" ]; then
-  cp "$HOME/rl-swarm-0.5.3/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 rl-swarm-0.5.3/swarm.pem"
-elif [ -f "$HOME/rl-swarm-0.5.3/user/keys/swarm.pem" ]; then
-  cp "$HOME/rl-swarm-0.5.3/user/keys/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 rl-swarm-0.5.3/user/keys/swarm.pem"
-elif [ -f "$HOME/rl-swarm-0.5/user/keys/swarm.pem" ]; then
-  cp "$HOME/rl-swarm-0.5/user/keys/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 0.5/user/keys/swarm.pem"
-elif [ -f "$HOME/rl-swarm/swarm.pem" ]; then
-  cp "$HOME/rl-swarm/swarm.pem" "$TMP_USER_FILES/swarm.pem" && echo "✅ 已备份 rl-swarm/swarm.pem"
-else
-  echo "⚠️ 未检测到 swarm.pem，如有需要请手动补齐。"
-fi
-
-# userApiKey.json
-if [ -f "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userApiKey.json" ]; then
-  cp "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 rl-swarm-0.5.3/modal-login/temp-data/userApiKey.json"
-elif [ -f "$HOME/rl-swarm-0.5.3/user/modal-login/userApiKey.json" ]; then
-  cp "$HOME/rl-swarm-0.5.3/user/modal-login/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 rl-swarm-0.5.3/user/modal-login/userApiKey.json"
-elif [ -f "$HOME/rl-swarm-0.5/user/modal-login/userApiKey.json" ]; then
-  cp "$HOME/rl-swarm-0.5/user/modal-login/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 0.5/user/modal-login/userApiKey.json"
-elif [ -f "$HOME/rl-swarm/modal-login/temp-data/userApiKey.json" ]; then
-  cp "$HOME/rl-swarm/modal-login/temp-data/userApiKey.json" "$TMP_USER_FILES/userApiKey.json" && echo "✅ 已备份 rl-swarm/modal-login/temp-data/userApiKey.json"
-else
-  echo "⚠️ 未检测到 userApiKey.json，如有需要请手动补齐。"
-fi
-
-# userData.json
-if [ -f "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userData.json" ]; then
-  cp "$HOME/rl-swarm-0.5.3/modal-login/temp-data/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 rl-swarm-0.5.3/modal-login/temp-data/userData.json"
-elif [ -f "$HOME/rl-swarm-0.5.3/user/modal-login/userData.json" ]; then
-  cp "$HOME/rl-swarm-0.5.3/user/modal-login/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 rl-swarm-0.5.3/user/modal-login/userData.json"
-elif [ -f "$HOME/rl-swarm-0.5/user/modal-login/userData.json" ]; then
-  cp "$HOME/rl-swarm-0.5/user/modal-login/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 0.5/user/modal-login/userData.json"
-elif [ -f "$HOME/rl-swarm/modal-login/temp-data/userData.json" ]; then
-  cp "$HOME/rl-swarm/modal-login/temp-data/userData.json" "$TMP_USER_FILES/userData.json" && echo "✅ 已备份 rl-swarm/modal-login/temp-data/userData.json"
-else
-  echo "⚠️ 未检测到 userData.json，如有需要请手动补齐。"
-fi
-
 # ----------- Clone Repo ----------- 
 if [[ -d "rl-swarm" ]]; then
   echo "⚠️ 检测到已存在目录 'rl-swarm'。"
@@ -300,14 +257,14 @@ if [[ -d "rl-swarm" ]]; then
   if [[ "$confirm" =~ ^[Yy]$ ]]; then
     echo "🗑️ 正在删除旧目录..."
     rm -rf rl-swarm
-    echo "📥 正在克隆 rl-swarm 仓库 (v0.7.0 分支)..."
-    git clone -b 0.7.0 https://github.com/readyName/rl-swarm.git
+    echo "📥 正在克隆 rl-swarm 仓库 ..."
+    git clone https://github.com/ego520/auto_gensyn.git
   else
     echo "❌ 跳过克隆，继续后续流程。"
   fi
 else
-  echo "📥 正在克隆 rl-swarm 仓库 (0.7.0 分支)..."
-  git clone -b 0.7.0 https://github.com/readyName/rl-swarm.git
+  echo "📥 正在克隆 rl-swarm 仓库 ..."
+  git clone https://github.com/ego520/auto_gensyn.git
 fi
 
 # ----------- 复制临时目录中的 user 关键文件 -----------
@@ -316,9 +273,11 @@ MODAL_DST="rl-swarm/modal-login/temp-data"
 mkdir -p "$MODAL_DST"
 
 cp "/Users/ego/Desktop/ego/swarm.pem" "$KEY_DST" && echo "✅ 恢复 swarm.pem 到新目录" || echo "⚠️ 恢复 swarm.pem 失败"
-cp "/Users/ego/Desktop/ego/*.json" "$MODAL_DST" && echo "✅ 恢复 json 到新目录" || echo "⚠️ 恢复 json 失败"
+cp "/Users/ego/Desktop/ego/userApiKey.json" "$MODAL_DST" && echo "✅ 恢复 userApiKey 到新目录" || echo "⚠️ 恢复 userApiKey 失败"
+cp "/Users/ego/Desktop/ego/userData.json" "$MODAL_DST" && echo "✅ 恢复 userData 到新目录" || echo "⚠️ 恢复 userData 失败"
+
+
   
-done
 
 # ----------- 生成桌面可双击运行的 .command 文件 -----------
 if [[ "$OS_TYPE" == "macos" ]]; then
